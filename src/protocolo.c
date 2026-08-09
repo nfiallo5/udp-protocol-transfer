@@ -34,8 +34,7 @@ uint32_t pkt_checksum(const pkt_header_t *hdr, const void *payload)
     memcpy(tmp + 4, &tot_n, 4);
     memcpy(tmp + 8, &len_n, 2);
     tmp[10] = h.type;
-    tmp[11] = h.flags;
-    memset(tmp + 12, 0, 4); /* chksum se deja en 0 durante el calculo */
+    memset(tmp + 11, 0, 4); /* chksum se deja en 0 durante el calculo */
 
     uint32_t crc = crc32_update(0, tmp, PKT_HEADER_LEN);
     if (h.data_len > 0 && payload != NULL) {
@@ -58,8 +57,7 @@ size_t pkt_pack(uint8_t *buf, const pkt_header_t *hdr, const void *payload)
     memcpy(buf + 4, &tot_n, 4);
     memcpy(buf + 8, &len_n, 2);
     buf[10] = h.type;
-    buf[11] = h.flags;
-    memcpy(buf + 12, &chk_n, 4);
+    memcpy(buf + 11, &chk_n, 4);
 
     if (h.data_len > 0 && payload != NULL) {
         memcpy(buf + PKT_HEADER_LEN, payload, h.data_len);
@@ -79,13 +77,12 @@ int pkt_unpack(const uint8_t *buf, size_t len, pkt_header_t *hdr,
     memcpy(&seq_n, buf, 4);
     memcpy(&tot_n, buf + 4, 4);
     memcpy(&len_n, buf + 8, 2);
-    memcpy(&chk_n, buf + 12, 4);
+    memcpy(&chk_n, buf + 11, 4);
 
     hdr->seq_num = ntohl(seq_n);
     hdr->total_chunks = ntohl(tot_n);
     hdr->data_len = ntohs(len_n);
     hdr->type = buf[10];
-    hdr->flags = buf[11];
     hdr->checksum = ntohl(chk_n);
 
     if (len < (size_t)(PKT_HEADER_LEN + hdr->data_len)) {

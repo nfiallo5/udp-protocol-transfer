@@ -10,7 +10,7 @@
 
 
 #define CHUNK_SIZE      1024
-#define PKT_HEADER_LEN  16 /* 4 bytes -> seq_num | 4 bytes -> total | 2 bytes -> n_datos | 1 byte -> tipo | 1 byte -> flag | 4 bytes -> checksum */
+#define PKT_HEADER_LEN  15
 #define PKT_MAX_LEN     (PKT_HEADER_LEN + CHUNK_SIZE)
 
 #define MAX_FILENAME    900
@@ -30,15 +30,12 @@ typedef enum {
     PKT_FIN_ACK  = 6   /* receptor -> emisor: confirma cierre */
 } pkt_type_t;
 
-#define FLAG_LAST 0x01
-
 
 typedef struct {
     uint32_t seq_num;
     uint32_t total_chunks;
     uint16_t data_len;
     uint8_t  type;
-    uint8_t  flags;
     uint32_t checksum;
 } pkt_header_t;
 

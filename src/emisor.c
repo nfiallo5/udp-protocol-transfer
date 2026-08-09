@@ -190,7 +190,6 @@ int main(int argc, char *argv[]) //<host_destino> <puerto_destino> <nombre_archi
         data_hdr.total_chunks = total_chunks;
         data_hdr.data_len = (uint16_t)n;
         data_hdr.type = PKT_DATA;
-        data_hdr.flags = (seq == total_chunks - 1) ? FLAG_LAST : 0;
 
         size_t pkt_len = pkt_pack(pkt_buf, &data_hdr, chunk_buf);
 
