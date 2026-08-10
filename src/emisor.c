@@ -63,7 +63,7 @@ static int send_with_retry(int sock, const uint8_t *pkt, size_t pkt_len,
     return -1;
 }
 
-static int do_handshake_init(int sock, const struct sockaddr_in *dest,
+static int connection_init(int sock, const struct sockaddr_in *dest,
                               const uint8_t *pkt, size_t pkt_len,
                               struct sockaddr_in *from_out, pkt_header_t *out_hdr)
 {
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) //<host_destino> <puerto_destino> <nombre_archi
 
     struct sockaddr_in session_addr;
     pkt_header_t resp_hdr;
-    if (do_handshake_init(sock, &dest_addr, init_buf, init_len, &session_addr, &resp_hdr) != 0) {
+    if (connection_init(sock, &dest_addr, init_buf, init_len, &session_addr, &resp_hdr) != 0) {
         fprintf(stderr, "EMISOR, el receptor no respondio al INIT, abortando\n");
         close(sock);
         fclose(f);

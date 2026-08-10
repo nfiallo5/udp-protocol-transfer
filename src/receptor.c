@@ -17,9 +17,9 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 
-#define MAX_SESSIONS        64
+#define MAX_SESSIONS        10
 #define IDLE_TIMEOUT_MS      5000   /* espera de socket de sesion */
-#define MAX_IDLE_RETRIES     12     /* ~60s de inactividad -> aborta sesion */
+#define MAX_IDLE_RETRIES     12     
 
 typedef struct {
     int active;
@@ -32,7 +32,6 @@ typedef struct {
 typedef struct {
     struct sockaddr_in cli_addr;
     int slot;
-    uint64_t file_size;
     uint32_t total_chunks;
     char filename[MAX_FILENAME + 1];
 } session_arg_t;
@@ -67,7 +66,7 @@ static void clean_filename(const char *in, char *out, size_t outlen)
     if (bn[0] == '\0' || strcmp(bn, "/") == 0) {
         bn = (char *)"archivo_recibido";
     }
-    snprintf(out, outlen, "recv_%s", bn);
+    snprintf(out, outlen, "recibido_%s", bn);
 }
 
 static void *session_thread(void *arg_ptr)
@@ -110,10 +109,6 @@ static void *session_thread(void *arg_ptr)
     if (fd < 0) {
         close(sock);
         goto cleanup_slot;
-    }
-    if (arg->file_size > 0) {
-        int rc = ftruncate(fd, (off_t)arg->file_size);
-        (void)rc;
     }
 
     bool *received = NULL;
@@ -219,7 +214,7 @@ cleanup_slot:
     return NULL;
 }
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[]) // ./receptor <puerto>
 {
     if (argc != 2) {
         fprintf(stderr, "Uso: %s <puerto>\n", argv[0]);
@@ -310,12 +305,6 @@ int main(int argc, char *argv[])
         g_sessions[slot].init_ack_len = 0;
         pthread_mutex_unlock(&g_sessions_mutex);
 
-        uint32_t hi, lo;
-        memcpy(&hi, payload, 4);
-        memcpy(&lo, payload + 4, 4);
-        hi = ntohl(hi);
-        lo = ntohl(lo);
-        uint64_t file_size = ((uint64_t)hi << 32) | lo;
 
         size_t name_len = hdr.data_len - 8;
         if (name_len > MAX_FILENAME) name_len = MAX_FILENAME;
@@ -323,7 +312,6 @@ int main(int argc, char *argv[])
         session_arg_t *arg = calloc(1, sizeof(session_arg_t));
         arg->cli_addr = cli_addr;
         arg->slot = slot;
-        arg->file_size = file_size;
         arg->total_chunks = hdr.total_chunks;
         memcpy(arg->filename, payload + 8, name_len);
         arg->filename[name_len] = '\0';

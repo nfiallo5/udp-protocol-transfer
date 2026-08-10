@@ -20,6 +20,8 @@ static uint32_t crc32_update(uint32_t crc, const uint8_t *buf, size_t len)
     return ~crc;
 }
 
+/* ---------------------------------------------------------------------- */
+
 uint32_t pkt_checksum(const pkt_header_t *hdr, const void *payload)
 {
     uint8_t tmp[PKT_HEADER_LEN];
